@@ -1,0 +1,113 @@
+---
+title: "Fixed Effects"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-02-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Question 1
+A single factor random effects completely randomized design has four levels of the factor. There are three replicates at each level. The total sum of squares is 330.56. The treatment sum of squares is 250.65.\
+a = 4\
+n = 3\
+N = 12\
+
+##### a
+Estimate the error variance.\
+$\hat{\sigma^{2}}=MSE$\
+$SS_{total}=SS_{treatments}+SS_{error}$\
+$330.56=250.65+SS_{error}$\
+$SS_{error}=79.91$\
+$\hat{\sigma^{2}}=MSE=\frac{SS_{error}}{N-a}$\
+$\hat{\sigma^{2}}=\frac{79.91}{12-4}$\
+$\hat{\sigma^{2}}=9.99$\
+
+##### b
+Estimate the variance due to the treatment.\
+$\hat{\tau^{2}}=MS_{treatments}=\frac{SS_{treatments}}{a-1}$\
+$\hat{\tau^{2}}=\frac{250.65}{4-1}$\
+$\hat{\tau^{2}}=83.55$\
+
+##### c
+Estimate the total variability.\
+$\hat{\sigma_{T}^{2}}=\frac{MS_{treatments}-MS_{errors}}{n}$\
+$\hat{\sigma_{T}^{2}}=\frac{83.55-9.99}{3}$\
+$\hat{\sigma_{T}^{2}}=24.52$\
+
+##### d
+What proportion of the variability in the response is explained by the treatment effect?\
+$\frac{SS_{treatments}}{SS_{total}}$\
+$\frac{250.65}{330.56}=0.758$\
+
+##### e
+Find a 95% confidence interval for the proportion in the previous part.\
+$\frac{1}{n}(\frac{MS_{treatments}}{F_{1-\frac{\alpha}{2},a-1,N-a}MS_{error}}-1)<\frac{\sigma^{2}_{T}}{\sigma^{2}}<\frac{1}{n}(\frac{MS_{treatments}}{F_{\frac{\alpha}{2},a-1,N-a}MS_{error}}-1)$\
+$\frac{1}{3}(\frac{83.55}{F_{1-\frac{0.05}{2},4-1,12-4}9.99}-1)<\frac{\sigma^{2}_{T}}{\sigma^{2}}<\frac{1}{3}(\frac{83.55}{F_{\frac{0.05}{2},4-1,12-4}9.99}-1)$\
+$\frac{1}{3}(\frac{83.55}{F_{.975,3,8}9.99}-1)<\frac{\sigma^{2}_{T}}{\sigma^{2}}<\frac{1}{3}(\frac{83.55}{F_{.025,3,8}9.99}-1)$\
+$\frac{1}{3}(\frac{83.55}{F_{.975,3,8}9.99}-1)<\frac{\sigma^{2}_{T}}{\sigma^{2}}<\frac{1}{3}(\frac{83.55}{F_{.025,3,8}9.99}-1)$\
+```{r}
+qf(0.975,3,8)
+qf(.025,3,8)
+```
+$\frac{1}{3}(\frac{83.55}{5.415962*9.99}-1)<\frac{\sigma^{2}_{T}}{\sigma^{2}}<\frac{1}{3}(\frac{83.55}{0.0687763*9.99}-1)$\
+95% confidence interval: $(0.15359,0.9757)$\
+
+#### Question 2
+In a single factor fixed effects models with $a$ levels of the factor and $n_{i}$ experimental units in level $i$, find the variance of $\sum_{i=1}^{n}c_{i}\bar{y_{i}}$ when the error variance is $\sigma^{2}$.\
+$Var(\sum_{i=1}^{n}c_{i}\bar{y_{i}})$\
+$Var(\sum_{i=1}^{n}c_{i}Var(\sum_{i=1}^{n}\bar{y_{i}})$\
+$(\frac{c_{i}}{n})^{2}Var(\bar{y_{1}}+\bar{y_{2}}+...+\bar{y_{n}})$\
+$(\frac{c_{i}}{n})^{2}(\sigma^{2}+\sigma^{2}+...+\sigma^{2})$\
+$(\frac{c_{i}}{n})^{2}n\sigma^{2}$\
+$Var=\frac{c_{i}^{2}\sigma^{2}}{n}$\
+
+
+#### Question 3
+The effect of three different lubricating oils on fuel economy in diesel truck engines is being studied. Fuel economy is measured using brake-specific fuel consumption after the engine has been running for 15 minutes. Five different truck engines are available for the study and the experimenters conduct the following RCBD.\
+```{r}
+oil_1 <- c(0.5,0.634,0.487,0.329,0.512)
+oil_2 <- c(0.535,0.675,0.52,0.435,0.54)
+oil_3 <- c(0.513,0.595,0.488,0.4,0.51)
+oils <- c(oil_1,oil_2,oil_3)
+```
+
+##### a
+Write down the model explaining all the terms and assumptions.\
+The model is a fixed effects model because we are modeling the mean effects of specific factor levels. This model assumes treatment effects are deviations from grand mean $\mu$, so $\sum_{i=1}^{a}\tau_{i}=0$. We employ the effects model for testing the existence of difference in group means: $y_{ij}=\mu+\tau_{i}+\epsilon_{ij}$ where $i=1,...,a$ and $j=1,...,n$, with the assumption $\epsilon_{ij}$ ~ $N(0,\sigma^{2})$.\
+
+##### b
+Carry out an anova test.\
+```{r}
+y <- as.vector(t(oils))
+n = rep(5,3)
+group = rep(3:1, n)
+data <- data.frame(y=oils, group=factor(group))
+fit = lm(y~group, data)
+anova(fit)
+```
+
+##### c
+Use Fisher LSD method to compare the three oils and state your conclusions.\
+```{r}
+# install.packages("agricolae")
+library(agricolae)
+print(LSD.test(fit, "group"))
+```
+In conclusion, based on the Fisher test, there are no significant differences between the pairs of means of Oils 1, 2, and 3. We come to this conclusion as the groups are given the score of 'a'. The equality of scores indicates a lack of significant difference amongst the pairs of means.\
+
+##### d
+Analyze the residuals for normality and heteroscedasticity.\
+```{r}
+# Test for Normality:
+qqnorm(fit$residuals)
+qqline(fit$residuals)
+
+# Test for Heteroscedasticity:
+plot(fit$fitted.values, fit$residuals, xlab="Fitted Values", ylab="Residuals")
+```
+\
+Based on analysis of both plots, we can confirm that the data is not normal, as the points on the Q-Q plot do not follow a near-straight line. We can also confirm that the data has heteroscedasticity, as the second plot expresses an unequal spread of points of predicted values.

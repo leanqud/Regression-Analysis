@@ -1,0 +1,90 @@
+---
+title: "Shear Strength"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-01-29"
+---
+##### 1.
+The repair time in hours of 16 electronic instruments chosen at random are as follows:\
+150 280 101 212 224 379 179 264\
+222 362 168 250 149 260 486 179\
+Can the repair time be adequately modeled by a normal distribution?\
+```{r}
+#install.packages("moments")
+library(moments)
+repair_time <- c(150, 280, 101, 212, 224, 379, 179, 264, 222, 362, 168, 250, 149, 260, 486, 179)
+hist(repair_time)
+skewness(repair_time)
+kurtosis(repair_time)
+```
+The skewness of the data is close to 1 rather than zero and the kurtosis of the data is over 3 which indicates that the repair time is not normally distributed. This is further justified by the histogram, which lacks the visual indications of normally distributed data.\
+
+##### 2.
+For the data in problem 1, test the hypothesis that the population standard deviation is 100 hours. Clearly state your assumptions. Report the conclusions at 5% level.\
+$H_{0}= \sigma = 100$\
+$H_{A}=\sigma\ne100$\
+$\chi^{2}=\frac{(n-1)s^{2}}{\sigma^{2}}$\
+$n=16$\
+$\sigma=100$\
+```{r}
+repair_time <- c(150, 280, 101, 212, 224, 379, 179, 264, 222, 362, 168, 250, 149, 260, 486, 179)
+sample_sd <- sd(repair_time)
+chi2 = ((16-1)*(sample_sd^2))/100^2
+print(pchisq(chi2, 16))
+```
+The p-value is not less than 0.05, so we fail to reject the null hypothesis.\
+
+##### 3.
+An article in the Journal of Strain Analysis (1983) compares several procedures for predicting the shear strength for steel plate girders. Construct a 95% confidence interval for the difference in mean shear strength for the procedures.\
+```{r}
+procedure1 <- c(1.186,1.151,1.322,1.339,1.200,1.402,1.365,1.537,1.559)
+procedure2 <- c(1.061,0.992,1.063,1.062,1.065,1.178,1.037,1.086,1.052)
+mean1 <- mean(procedure1)
+mean2 <- mean(procedure2)
+mean_difference <- mean1-mean2
+sd1 <- sd(procedure1)
+sd2 <- sd(procedure2)
+sd_difference <- sd1-sd2
+se1 <- sd1/sqrt(9)
+se2 <- sd2/sqrt(9)
+se_difference <- se1-se2
+t_score <- qt(p=0.05/2, df=8, lower.tail=FALSE)
+margin_error <- t_score*se_difference
+lower.bound <- mean_difference-margin_error
+upper.bound <- mean_difference+margin_error
+confidence_interval <- print(c(lower.bound,upper.bound))
+```
+The confidence interval is [0.1995967 0.3481811].\
+
+##### 4.
+The following are the burning times (in minutes) of chemical flares of two different formulations. The design engineers are interested in testing if the mean burning times are equal for the two formulations, assuming the variances are the same. Test at the 1% level.\
+Formulation I: 65, 82, 81, 67, 57, 59, 66, 75, 82, 70\
+Formulation II: 64, 56, 71, 69, 83, 74, 59, 82, 65, 79\
+$H_{0}: \mu_{1}-\mu_{2}=0$
+$H_{A}: \mu_{1}-\mu_{2}\ne0$
+```{r}
+form1 <- c(65,82,81,67,57,59,66,75,82,70)
+form2 <- c(64,56,71,69,83,74,59,82,65,79)
+t.test(form1, form2, var.equal=TRUE, alternative="two.sided")
+```
+The p-value is greater than 0.01, so we fail to reject the null hypothesis.
+
+##### 5.
+Let X~N(0,1) and $Y=X^{2}$.\
+a)\
+Find Cov(X,Y).\
+$Cov(X,Y)=E[XY]-E[X]E[Y]$\
+$Cov(X,X^{2})=E[X^{3}]-E[X]E[X^{2}]$\
+$Cov(X,X^{2})=0-0*1=0$\
+b)\
+Find P(Y>1|X=1.5) and P(Y>1|X=-0.5).\
+P(Y>1|X=1.5):$Y=X^{2}=1.5^{2}=2.25$\
+100% probability that Y>1 when X=1.5\
+P(Y>1|X=-0.5):$Y=X^{2}=-0.5^{2}=0.25$\
+0% probability that Y>1 when X=-0.5.\
+c)\
+Conclude from the above that X and Y are uncorrelated, but not independent.\
+$Corr(X,Y)=\frac{Cov(X,Y)}{\sqrt(Var(X)Var(Y))}$
+$Corr(X,Y)=0$
+X and Y are not independent due to the relationship expressed in the equation $Y=X^{2}$. However, the correlation is 0, as demonstrated above.

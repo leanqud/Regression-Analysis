@@ -1,0 +1,113 @@
+---
+title: "ANOVA"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-03-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Question 1
+Describe how you will conduct a factorial experiment with two factors at a and b levels as an RCBD when there is one nuisance factor at c levels. Write down the model, assumptions and ANOVA table.\
+
+To conduct a factorial experiment with two factors at a and b levels as an RCBD when there is one nuisance factor at c levels, I identify the model as $y_{ijk}=\mu+\tau_i+\beta_j+(\tau\beta)_{ij}+\epsilon_{ijk}$ where $i=1,...,a$; $j=1,...,b$; and $k=1,...,n$. There are $a$ levels of Factor A, $b$ levels for Factor B, and $n$ is replicates within each combination of levels. Because this is a randomized complete block design (RCBD), we assume the experimental conditions are homogenous and there are no other important effects beyond the experimental factor. To deal with the nuisance factor at $c$ levels, we use the technique of blocking since we know from the beginning that factor $c$ has effects we aren't interested in. The ANOVA table for factorial design is below (note all equations to determine F value have the denominator of MSE).\
+```{r}
+#install.packages("readxl")
+library(readxl)
+anovaQ1 <- read_excel(path="~/Desktop/PSTAT122/Data/HW6Q1.xlsx")
+print(anovaQ1)
+```
+
+### Question 2
+The following output was obtained from a computer program that performed a two-way ANOVA on a factorial experiment.\
+
+#### a
+Fill in the blanks in the ANOVA table.\
+```{r}
+anovaQ2 <- read_excel(path="~/Desktop/PSTAT122/Data/HW6Q2.xlsx")
+print(anovaQ2)
+```
+
+#### b
+How many levels were used for Factor B?\
+DF of interaction:\
+$(a-1)(b-1)=3$\
+$(2-1)(b-1)=3$\
+$b-1=3$\
+$b=4$\
+Four levels were used for Factor B.\
+
+#### c
+How many replicates of the experiment were performed?\
+DF of total:\
+$abn-1=15$\
+$2*4*n-1=15$\
+$8n=16$\
+$n=2$\
+Two replicates of the experiment were performed.\
+
+#### d
+What conclusions would you draw?\
+Based on the ANOVA table, I can conclude that there is no significant difference amongst the two factor main effects or the interaction at the 95% significance level.\
+
+### Question 3
+Consider the battery life experiment (example 5.1 of text, pg 161) discussed in class. note that the interaction is significant. For material type 1, conduct a pairwise comparison of the mean battery life under the three temperature settings using Fisher LSD method. Now for temperature=125F, conduct a pairwise comparison of the mean battery life under the three material types using Fisher LSD method.\
+```{r}
+library(agricolae)
+values <- c(130,115,74,180,
+            34,40,80,75,
+            20,70,82,58)
+data_frame <- data.frame(life=values,temp=factor(rep(1:3,each=4)))
+fit <- aov(life~temp,data=data_frame)
+anova(fit)
+test1 <- LSD.test(fit,"temp")
+test1
+
+values <- c(20,70,82,58,
+            25,70,58,45,
+            96,104,82,60)
+data_frame = data.frame(life=values,mat=factor(rep(1:3,each=4)))
+fit <- aov(life~mat, data=data_frame)
+anova(fit)
+test2 <- LSD.test(fit, "mat")
+test2
+```
+Based on the above tests, we conclude a significant difference in average life between the 15`F temperature and both the 70`F and 125`F. The test evaluating differences within 125`F found a significant difference between material 1 and material 3.\
+
+### Question 4
+The factors that influence the breaking strength of a synthetic fiber are
+being studied. Four production machines and three operators are chosen
+and a factorial experiment is run using fiber from the same production
+batch. The results are as follows.\
+
+```{r}
+fiber_strength <- c(109,110,108,110,
+                    110,115,109,108,
+                    110,110,111,114,
+                    112,111,109,112,
+                    116,112,114,120,
+                    114,115,119,117)
+operators <- c(rep("1",8), rep("2",8), rep("3",8))
+machines <- factor(c(1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4))
+data_frame <- data.frame(fiber_strength,machines,operators)
+```
+
+#### a
+Analyze the data and draw conclusions.\
+```{r}
+fit <- aov(fiber_strength~machines+operators+machines:operators,data=data_frame)
+summary(fit)
+```
+Based on the summary above, we can note that, if evaluating at the 95% significance level, there is a significant difference among at least one of the operators, as the p-value is for operators is smaller than 0.05.\
+
+#### b
+Prepare appropriate residual plots and comment on the validity of model assumptions.\
+```{r}
+resi_duals <- residuals(fit)
+qqnorm(resi_duals)
+qqline(resi_duals)
+```
+Based on the above plot, we can conclude that the data does not follow a normal distribution. As the plot points do not resemble a line.\

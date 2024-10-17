@@ -1,0 +1,89 @@
+---
+title: "Fuel Economy"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-03-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Question 1
+Consider problem 3 of HW4 (4.13 of textbook) regarding effect of lubricating oil on fuel economy. Assume the trucks are random. Estimate the block variance component.\
+$E(MS_{blocks})=\hat{\sigma}_{\beta}^{2}=\frac{MS_{blocks}-MS_{error}}{a}=\frac{.003353}{3}=0.000942$\
+```{r}
+data <- c(0.5, 0.634, 0.487, 0.329, 0.512, 0.535, 0.675, 0.52, 0.435, 0.54, 0.513, 0.595, 0.488, 0.4, 0.51)
+tableQ1 <- data.frame(Economy = data, Oil= factor(rep(1:3,each=5)), Trucks=as.factor(rep(c(1:5),3)))
+model <- aov(Economy~Oil+Trucks, data=tableQ1)
+summary(model)
+```
+
+### Question 2
+The effect of five different ingredients (A, B, C, D, E) on the reaction time of a chemical is being studied. Each batch of raw material is large enough to permit 4 runs to be made. The experimenter designs a BIBD and obtains the data as follows.\
+
+#### a
+What are the values of the parameters $b,k,r,a,\lambda$ in the usual notations?\
+b = 5 levels for blocking factor\
+k = 4 experimental units per block\
+r = 4 replication per treatment\
+a = 5 levels of experimental factor\
+$\lambda$ = 3 blocks every pair of treatment occurs together\
+
+#### b
+Compute the ANOVA table and test if there is a significant difference among the ingredients.\
+```{r}
+tableQ2 <- data.frame(time= c(11,4,6,4,
+                              7,9,8,2,
+                              1,7,6,3,
+                              7,3,1,8,
+                              3,8,5,10),
+                      ingredient = c("B","C","D","E",
+                                     "A","C","D","E",
+                                     "A","B","D","E",
+                                     "A","B","C","E",
+                                     "A","B","C","D"),
+                      batch = c("1","1","1","1",
+                                "2","2","2","2",
+                                "3","3","3","3",
+                                "4","4","4","4",
+                                "5","5","5","5"))
+head(tableQ2)
+model = aov(time~ingredient+batch,data=tableQ2)
+anova(model)
+```
+$H_{0}:\tau_{i}=0; \forall{i}=1,...,a$\
+$H_{A}:\tau_i\ne0$\
+Our rejection region is $f_0>F_{\alpha;(a-1)(b-1)}$. Testing at a 95% significance level, we fail to reject the null hypothesis and conclude that there is no significant difference among the ingredients.\
+
+### Question 3
+The following data were obtained from an experiment which was run using a Latin Square Design, to compare four treatments labeled A, B, C, and D:\
+
+#### a
+Compute the ANOVA table appropriate for this design.\
+```{r}
+library(agricolae)
+tableQ3 <- data.frame(row= c("3","2","1","4",
+                             "4","3","2","1",
+                             "1","4","3","2",
+                             "2","1","4","3"),
+                      column= c(rep("1",4), rep("2",4), rep("3",4), rep("4",4)),
+                      order= c("C","B","A","D",
+                               "D","C","B","A",
+                               "A","D","C","B",
+                               "B","A","D","C"),
+                      results=c(5,10,10,7,
+                                10,10,14,18,
+                                11,12,7,11,
+                                9,14,8,8))
+str(tableQ3)
+y <- tableQ3$results - 16
+model <- aov(y~row+column+order, data=tableQ3)
+summary(model)
+anova(model)
+```
+
+#### b
+Is there significant evidence that the four treatment effects are different?\
+There is no significant evidence that the four treatment effects are different because the F-values obtained in the ANOVA table are miniscule.\

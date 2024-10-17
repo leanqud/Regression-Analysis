@@ -1,0 +1,166 @@
+---
+title: "Portland Cement"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-02-05"
+---
+```{r}
+# install.packages("agricolae")
+library(agricolae)
+```
+
+## Question 1
+The tensile strength of Portland cement is being studied. Four different mixing techniques can be used economically. A completely randomized experiment was conducted and the following data was collected.\
+
+##### a
+Test the hypothesis that mixing techniques affect the tensile strength of the cement. Use $\alpha=0.05$.\
+$H_{0}: \mu=\mu$\
+$H_{A}: \mu\ne\mu$\
+```{r}
+tech1 <- c(3129,3000,2865,2890)
+tech2 <- c(3200,3300,2975,3150)
+tech3 <- c(2800,2900,2985,3050)
+tech4 <- c(2600,2700,2600,2765)
+techniques <- c(tech1,tech2,tech3,tech4)
+y <- as.vector(t(techniques))
+n = rep(4,4)
+group = rep(1:4, n)
+data = data.frame(y=y,group=factor(group))
+fit = lm(y~group, data)
+anova(fit)
+```
+Based on the ANOVA table, we reject the null hypothesis because the p-value is less than the significance level of 0.05.\
+
+##### b
+Construct a normal probability plot of residuals. What conclusion can be drawn?\
+```{r}
+tech1 <- c(3129,3000,2865,2890)
+tech2 <- c(3200,3300,2975,3150)
+tech3 <- c(2800,2900,2985,3050)
+tech4 <- c(2600,2700,2600,2765)
+techniques <- c(tech1,tech2,tech3,tech4)
+y <- as.vector(t(techniques))
+n = rep(4,4)
+group = rep(1:4, n)
+data = data.frame(y=y,group=factor(group))
+fit = lm(y~group, data)
+qqnorm(fit$residuals)
+qqline(fit$residuals)
+```
+\
+Based on the normal probability plot of distributions, we can conclude that the data likely follows a normal distribution, as the residual points follow the straight line very closely.\
+
+##### c
+Plot the residuals vs the fitted values. What conclusion can be drawn?\
+```{r}
+tech1 <- c(3129,3000,2865,2890)
+tech2 <- c(3200,3300,2975,3150)
+tech3 <- c(2800,2900,2985,3050)
+tech4 <- c(2600,2700,2600,2765)
+techniques <- c(tech1,tech2,tech3,tech4)
+y <- as.vector(t(techniques))
+n = rep(4,4)
+group = rep(1:4, n)
+data = data.frame(y=y,group=factor(group))
+fit = lm(y~group, data)
+plot(fit$fitted.values,fit$residuals,xlab="Fitted Values",ylab="Residuals",main="Fitted Values vs Residuals")
+```
+\
+The residuals are not centering around zero and there are no notable outliers, so we can conclude this is a well-fitted linear regression model.\
+
+##### d
+Use the Fisher LSD method to make comparisons between pairs of means.\
+```{r}
+tech1 <- c(3129,3000,2865,2890)
+tech2 <- c(3200,3300,2975,3150)
+tech3 <- c(2800,2900,2985,3050)
+tech4 <- c(2600,2700,2600,2765)
+techniques <- c(tech1,tech2,tech3,tech4)
+y <- as.vector(t(techniques))
+n = rep(4,4)
+group = rep(1:4, n)
+data = data.frame(y=y,group=factor(group))
+fit <- aov(y~group, data)
+library(agricolae)
+print(LSD.test(fit,"group"))
+```
+Based on the Fisher LSD method, only Techniques 1 and 3 do not have significantly different mean exam scores, as they're both evaluated with 'b'. Technique 2, with a value of 'a', is significantly different in mean to Technique 1, 3, and Technique 4, with a value of 'c'.\
+
+##### e
+Use Bonferroni method to make comparisons between pairs of means.
+```{r}
+tech1 <- c(3129,3000,2865,2890)
+tech2 <- c(3200,3300,2975,3150)
+tech3 <- c(2800,2900,2985,3050)
+tech4 <- c(2600,2700,2600,2765)
+techniques <- c(tech1,tech2,tech3,tech4)
+y <- as.vector(t(techniques))
+n = rep(4,4)
+group = rep(1:4, n)
+data = data.frame(y=y,group=factor(group))
+fit <- aov(y~group, data)
+pairwise.t.test(data$y, data$group,p.adjust.method="bonferroni")
+```
+Based on the Bonferroni test, the adjusted p-value for the mean difference in tensile strength based on technique used is shown. At the 0.05 significance level, Techniques 1 and 3 do not differ, while Technique 2 slightly differs from 4, and Technique 4 is different from all of the above.\
+
+##### f
+Do the two methods give different results? If so, explain where this difference is coming from.\
+Both tests show that there is no difference in means between Technique 1 and 3. However, the Bonferroni test shows that there is a statistically significant difference in mean between Technique 2 and 4, which isn't demonstrated in the Fisher LSD test.\
+
+## Question 2
+A single factor completely randomized design has six levels of the factor. There are five replicates at each level and the total sum of squares is 900.25. The treatment sum of squares is 750.5.\
+
+##### a
+What is the estimate of the error variance?\
+```{r}
+total_ss = 900.25
+treat_ss = 750.5
+dofe = 24 # 30 total observations - 6 treatments = degrees of freedom for error
+sigma2 <- ((total_ss-treat_ss)/dofe)
+print(sigma2)
+```
+The estimate of the error variance is $\sigma^{2}=6.24$\
+
+##### b
+What proportion of variability is explained by the treatment effect?\
+```{r}
+total_ss = 900.25
+treat_ss = 750.5
+propvar <- treat_ss / total_ss
+print(propvar)
+```
+The proportion of variability explained by the treatment effect is 0.834.\
+
+##### c
+What is the F-statistic and corresponding p-value?
+```{r}
+total_ss = 900.25
+treat_ss = 750.5
+doft = 5 # 6 groups/levels - 1
+dofe = 24 # 30 total observations - 6 treatments = degrees of freedom for error
+sigma2 = 6.239583
+mean_treatment <- treat_ss / doft
+f_stat <- ((mean_treatment)/sigma2)
+print(f_stat)
+p_value <- pf(f_stat, doft, dofe,lower.tail=FALSE)
+print(p_value)
+```
+The F-statistic is 24.06. The p-value is $1.267578e^{-08}$\
+
+## Question 3
+Consider testing equality of two normal populations, where the variances are unknown but assumed to be equal.\
+
+##### a
+Describe the t-test that you would use in this situation.\
+With the knowledge that both populations are normally distributed and the variances are unknown but equal, I would use the pooled two-sample t-test.\
+
+##### b
+Show that the t-statistic is square root of the F-statistic that would be obtained if, instead, you conducted a one factor ANOVA.
+$a=2$\
+$F_{a-1},{N-2}=T_{N-2}^{2}$
+$$F_{{2-1},{N-2}}=\frac{\frac{SST}{(2-1)}}{\frac{SSE}{(N-2)}}=\frac{(\bar{y_{1}}-\bar{y_{2}})^{2}}{S^{2}_{p}(\frac{1}{n_{1}}+\frac{1}{n_{2}})}=T^{2}_{k}$$
+
+##### c
+Are the two procedures equivalent? Justify your answer.\
+Based on the proof shown above, the two procedures are equivalent because the equations themselves are derivations of each other.\
